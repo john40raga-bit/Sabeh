@@ -1,1 +1,622 @@
-\u003Chtml lang="en">\u003Chead>\u003Cmeta name="color-scheme" content="dark light"> \u003Cstyle>html,body{background:#121212 !important;color:#E1E3E2 !important;}\u003C/style>   \u003Cmeta charset="UTF-8">   \u003Clink rel="icon" type="image/png" href="/assets/logo-BfxinRwa.png">   \u003Cmeta name="viewport" content="width=device-width, initial-scale=1.0">   \u003Ctitle>Sabeh Cafe\u003C/title>   \u003Cscript type="module" crossorigin="" src="/assets/index-BENVgcK7.js">\u003C/script>   \u003Clink rel="stylesheet" crossorigin="" href="/assets/index-DnpbUEB1.css"> \u003Cstyle data-emotion="css-global" data-s="">\u003C/style>\u003Cstyle data-emotion="css" data-s="">\u003C/style>\u003C/head> \u003Cbody>   \u003Cdiv id="root">\u003Cdiv class="MuiBox-root css-1e7zxyr">\u003Cspan class="MuiCircularProgress-root MuiCircularProgress-indeterminate MuiCircularProgress-colorPrimary css-r9ih3s" role="progressbar" style="width: 40px; height: 40px;">\u003Csvg class="MuiCircularProgress-svg css-4ejps8" viewBox="22 22 44 44">\u003Ccircle class="MuiCircularProgress-circle MuiCircularProgress-circleIndeterminate css-13odlrs" cx="44" cy="44" r="20.2" fill="none" stroke-width="3.6">\u003C/circle>\u003C/svg>\u003C/span>\u003C/div>\u003Cfooter class="MuiBox-root css-1i4q1l5">\u003Cdiv class="MuiContainer-root MuiContainer-maxWidthLg css-9wvnva">\u003Cdiv class="MuiBox-root css-l39ll3">\u003Cp class="MuiTypography-root MuiTypography-body2 css-1ylyh76">© 2025 Sabeh Cafe. All rights reserved.\u003C/p>\u003Cp class="MuiTypography-root MuiTypography-body2 css-1l02u3o">Contact: \u003Ca class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-8zz4wg" href="tel:+251907268333">+251 907 268 333\u003C/a>\u003C/p>\u003Cbutton class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-6nfx55" tabindex="0" type="button">Meet the Developers\u003C/button>\u003C/div>\u003C/div>\u003C/footer>\u003C/div> \u003C/body>\u003C/html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sabeh Cafe & Games</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; scroll-behavior: smooth; }
+        
+        /* Sidebar & General Styles */
+        #sidebar { transition: transform 0.3s ease-in-out; transform: translateX(-100%); z-index: 50; }
+        #sidebar.open { transform: translateX(0); }
+        #overlay { transition: opacity 0.3s ease-in-out; z-index: 40; pointer-events: none; }
+        #overlay.open { opacity: 0.5; pointer-events: auto; }
+        .text-price { color: #5d4037; }
+        section { scroll-margin-top: 80px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* --- CHESS STYLES --- */
+        .chess-board {
+            display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr);
+            width: 100%; max-width: 400px; aspect-ratio: 1 / 1;
+            border: 5px solid #5d4037; margin: 0 auto; user-select: none;
+        }
+        .square { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; font-size: 2.2rem; cursor: pointer; position: relative; }
+        @media (max-width: 400px) { .square { font-size: 1.6rem; } }
+        .white-square { background-color: #f0d9b5; color: black; }
+        .black-square { background-color: #b58863; color: black; }
+        .selected { background-color: #7b61ff !important; }
+        .highlight::after { content: ''; position: absolute; width: 40%; height: 40%; background-color: rgba(255, 255, 0, 0.8); border-radius: 50%; pointer-events: none; box-shadow: 0 0 5px yellow; }
+        .piece { z-index: 10; line-height: 1; pointer-events: none; }
+        .white-piece { color: #fff; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0px 2px 2px rgba(0,0,0,0.4); }
+        .black-piece { color: #000; text-shadow: 0px 2px 2px rgba(255,255,255,0.3); }
+
+        /* --- ADMIN & UI --- */
+        #admin-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 100;
+            display: none; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .admin-box {
+            background: white; padding: 2rem; border-radius: 15px; width: 90%; max-width: 400px;
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .admin-dashboard {
+            display: none; background: #1f2937; color: white; padding: 20px;
+            margin: 20px; border-radius: 10px; border: 2px solid #ea580c;
+        }
+        .admin-item-list {
+            max-height: 400px; overflow-y: auto; text-align: left;
+        }
+        .admin-item-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px; border-bottom: 1px solid #374151;
+        }
+        .admin-item-row label { flex: 1; font-size: 0.9rem; }
+        .admin-item-row input { 
+            width: 100px; background: #374151; border: 1px solid #4b5563; 
+            color: white; padding: 2px 5px; rounded: 4px; 
+        }
+        #save-btn-container {
+            display: none; /* Hidden by default */
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 999;
+        }
+        .save-btn {
+            background: #22c55e; color: white; padding: 12px 30px;
+            border-radius: 50px; font-weight: bold; font-size: 1.1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid white;
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .save-btn:hover { transform: translateX(-50%) scale(1.05); }
+        .save-btn:active { transform: translateX(-50%) scale(0.95); }
+        
+        #sync-status {
+            display: none;
+            position: fixed; top: 70px; right: 10px;
+            background: rgba(0, 150, 255, 0.9); color: white;
+            padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; z-index: 90;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        /* Game Status Box */
+        .game-status {
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Admin Login Modal -->
+    <div id="admin-modal">
+        <div class="admin-box">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">Admin Login</h2>
+            <input type="password" id="admin-pass" placeholder="Password" class="w-full p-2 border border-gray-300 rounded mb-4">
+            <button onclick="checkAdmin()" class="bg-orange-600 text-white px-6 py-2 rounded font-bold w-full hover:bg-orange-700">Enter</button>
+            <button onclick="closeAdminModal()" class="text-gray-500 mt-4 text-sm underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Save Changes Button (Fixed Bottom) -->
+    <div id="save-btn-container">
+        <button onclick="savePriceChanges()" class="save-btn">💾 Save & Sync All Devices</button>
+    </div>
+    
+    <div id="sync-status">Updating...</div>
+
+    <div id="overlay" class="fixed inset-0 bg-black opacity-0" onclick="toggleMenu()"></div>
+
+    <nav class="fixed top-0 w-full bg-white shadow-sm z-30 h-16 flex items-center px-4 border-b border-gray-200">
+        <button onclick="toggleMenu()" class="p-2 mr-4 text-gray-600 focus:outline-none">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="flex items-center gap-2">
+            <!-- SECRET TRIGGER: Click Coffee 5 times -->
+            <div class="text-orange-800 text-2xl cursor-pointer select-none" onclick="triggerSecret()">☕</div> 
+            <h1 class="text-xl font-bold text-gray-800 tracking-wide">Sabeh Cafe</h1>
+        </div>
+        <div class="ml-auto text-gray-800 font-bold border border-gray-800 rounded px-2 py-0.5 text-xs">0</div>
+    </nav>
+
+    <aside id="sidebar" class="fixed top-0 left-0 h-full bg-white shadow-2xl flex flex-col pt-20 w-[65vw] sm:w-64 border-r border-gray-100 overflow-y-auto no-scrollbar">
+        <div class="px-6 pb-4 border-b border-gray-100">
+            <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">Menu Categories</h2>
+        </div>
+        <ul class="flex-col w-full text-left mt-2 space-y-1">
+             <li><a href="#breakfast" onclick="toggleMenu()" class="block px-6 py-3 hover:bg-orange-50 text-gray-700 font-medium">🥞 Breakfast</a></li>
+             <li><a href="#ethiopian" onclick="toggleMenu()" class="block px-6 py-3 hover:bg-orange-50 text-gray-700 font-medium">🥘 Ethiopian</a></li>
+             <li><a href="#chicken" onclick="toggleMenu()" class="block px-6 py-3 hover:bg-orange-50 text-gray-700 font-medium">🍗 Chicken & Crispy</a></li>
+             <li><a href="#pizza-pasta" onclick="toggleMenu()" class="block px-6 py-3 hover:bg-orange-50 text-gray-700 font-medium">🍕 Pizza & Pasta</a></li>
+             <li><a href="#burgers" onclick="toggleMenu()" class="block px-6 py-3 hover:bg-orange-50 text-gray-700 font-medium">🍔 Burgers & Wraps</a></li>
+             <li><a href="#juices" onclick="toggleMenu()" class="block px-6 py-3 hover:bg-orange-50 text-gray-700 font-medium">🍹 Drinks</a></li>
+             <li class="mt-4 border-t border-gray-100 pt-2 bg-purple-50">
+                <span class="block px-6 py-2 text-xs font-bold text-purple-800 uppercase">Games Arcade</span>
+                <a href="#chess-game" onclick="toggleMenu()" class="block px-6 py-2 text-purple-700 font-medium hover:bg-purple-100">♟️ Play Chess</a>
+             </li>
+        </ul>
+        <div class="mt-auto p-6 bg-gray-50">
+            <p class="text-xs text-gray-400">© 2024 Sabeh Cafe</p>
+        </div>
+    </aside>
+
+    <main class="container mx-auto px-3 py-4 mt-16 pb-20">
+
+        <!-- ADMIN DASHBOARD (Dynamic) -->
+        <div id="admin-dashboard" class="admin-dashboard">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
+                <h2 class="text-xl font-bold text-orange-400">Edit Menu Prices</h2>
+                <button onclick="logoutAdmin()" class="text-xs bg-red-600 px-3 py-1 rounded hover:bg-red-700">Exit Admin</button>
+            </div>
+            <div id="admin-items-container" class="admin-item-list">
+                <!-- Items injected here by JS -->
+            </div>
+        </div>
+
+        <!-- Breakfast Section -->
+        <section id="breakfast" class="mb-8">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 pl-1 border-l-4 border-orange-600">Breakfast</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6" id="menu-grid-breakfast">
+                <!-- Pancake -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Pancake</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">200 Birr</p></div>
+                </div>
+                <!-- Chechebsa -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://c8.alamy.com/comp/M4F8M3/chechebsa-berbere-kibe-breakfast-ethiopian-food-M4F8M3.jpg" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Chechebsa</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">200 Birr</p></div>
+                </div>
+                <!-- Special Chechebsa -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse4.mm.bing.net/th/id/OIP.9yfmXCKBxddjHdf7jix-dwHaE8?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Special Chechebsa</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">250 Birr</p></div>
+                </div>
+                <!-- Fetira -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://i.pinimg.com/736x/11/eb/dd/11ebdddbd9b4f604a18777cc6c836f73.jpg" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Fetira</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">200 Birr</p></div>
+                </div>
+                <!-- Special Fetira -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse1.mm.bing.net/th/id/OIP.r8AJBd1cRXriv4YBka6b3wHaEK?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Special Fetira</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">250 Birr</p></div>
+                </div>
+                <!-- Genfo -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse3.mm.bing.net/th/id/OIP.7h7mAzw2hV8-T6egR4MbdAHaDK?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Genfo</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">200 Birr</p></div>
+                </div>
+                <!-- Bula -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse2.mm.bing.net/th/id/OIP.yL2S7pQfSKdEznjmJ9ElfgHaH-?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Bula</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">200 Birr</p></div>
+                </div>
+                <!-- Special Bula -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse1.mm.bing.net/th/id/OIP.KzI-2GGyK24Rh7N7ocFhcgHaEK?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Special Bula</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">250 Birr</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ethiopian Section -->
+        <section id="ethiopian" class="mb-8">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 pl-1 border-l-4 border-orange-600">Ethiopian Traditional</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+                <!-- Beyaynetu -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse3.mm.bing.net/th/id/OIP.LXIZWSVGSOSUMW1lhi9KmgHaFS?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Beyaynetu</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">250 Birr</p></div>
+                </div>
+                <!-- Shiro -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse3.mm.bing.net/th/id/OIP.-HjZpGJZ0sYMufJvh5qgzQHaHa?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Shiro</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">200 Birr</p></div>
+                </div>
+                <!-- Misir -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse2.mm.bing.net/th/id/OIP.qEkB7LLaHMLECYd2uhs7vAAAAA?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Misir</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">180 Birr</p></div>
+                </div>
+                <!-- Gomen -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse3.mm.bing.net/th/id/OIP.qlZfAtkNjaxpNNsl5mNWUgHaHa?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Gomen</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">180 Birr</p></div>
+                </div>
+                <!-- Gomen Besiga -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse2.mm.bing.net/th/id/OIP.i4r1NQydyTN9fHDPyWGWsgHaEK?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Gomen Besiga</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">300 Birr</p></div>
+                </div>
+                <!-- Special Kitfo -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRN3Ai1HauPzzjfJIH0xCGc24NUXber16IRWQ&s" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Special Kitfo</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">550 Birr</p></div>
+                </div>
+                <!-- Special Combo -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse3.mm.bing.net/th/id/OIP.irzQqXAeHmAU4Sks6bC5ggHaD4?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Special Combo</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">600 Birr</p></div>
+                </div>
+                <!-- Fasting Combo -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse4.mm.bing.net/th/id/OIP.7ihpmMO0YK-T4RoQtsnGQgHaE7?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Fasting Combo</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">250 Birr</p></div>
+                </div>
+                <!-- Half-Half -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse1.mm.bing.net/th/id/OIP.DVP51nX4PDEFqg0l6NormQHaE8?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Half-Half</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">220 Birr</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chicken & Crispy Section -->
+        <section id="chicken" class="mb-8">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 pl-1 border-l-4 border-orange-600">Chicken & Crispy</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse3.mm.bing.net/th/id/OIP.58rqHWxj_pEMCEChrqKM0gHaLH?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Chicken Legs</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">350 Birr</p></div>
+                </div>
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse4.mm.bing.net/th/id/OIP.2PG3C0Xr5-AuM0w-BjgVmQHaHa?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Chicken Wings</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">300 Birr</p></div>
+                </div>
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?q=80&w=500" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Crispy Chicken</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">380 Birr</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pizza & Pasta Section -->
+        <section id="pizza-pasta" class="mb-8">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 pl-1 border-l-4 border-orange-600">Pizza & Pasta</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+                <!-- Pizzas -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=500" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Chicken Pizza</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">400 Birr</p></div>
+                </div>
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=500" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Pepperoni</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">420 Birr</p></div>
+                </div>
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=500" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Margherita</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">300 Birr</p></div>
+                </div>
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=500" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Beef Pizza</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">450 Birr</p></div>
+                </div>
+                <!-- Lasagna -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse1.mm.bing.net/th/id/OIP.tEvfcE_FlAMLvA8IEKYVAQHaLH?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Special Lasagna</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">400 Birr</p></div>
+                </div>
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://images.unsplash.com/photo-1619895092538-128341789043?q=80&w=500" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Fasting Lasagna</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">300 Birr</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Burgers & Wraps Section -->
+        <section id="burgers" class="mb-8">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 pl-1 border-l-4 border-orange-600">Burgers & Wraps</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+                <!-- Burgers -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=500" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Sabeh Burger</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">350 Birr</p></div>
+                </div>
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=500" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Cheeseburger</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">300 Birr</p></div>
+                </div>
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse4.mm.bing.net/th/id/OIP.m93SV6ox1swkqRaBnEzbHgHaHa?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Chicken Burger</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">320 Birr</p></div>
+                </div>
+                <!-- Wraps -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://images.unsplash.com/photo-1626700051175-6818013e1d4f?q=80&w=500" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Chicken Wrap</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">250 Birr</p></div>
+                </div>
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://images.unsplash.com/photo-1528735602780-2552fd46c7af?q=80&w=500" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Club Sandwich</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">280 Birr</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Drinks Section -->
+        <section id="juices" class="mb-8">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 pl-1 border-l-4 border-orange-600">Fresh Juices & Drinks</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+                <!-- Juices -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse4.mm.bing.net/th/id/OIP.pwGh5W7ZVrne5Uwwp29qGgHaJ4?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Spris</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">100 Birr</p></div>
+                </div>
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse3.mm.bing.net/th/id/OIP.vxve3KVWYITNgkZtXAUtzQHaJN?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Avocado</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">100 Birr</p></div>
+                </div>
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://tse3.mm.bing.net/th/id/OIP.5wR3F8QFZqYgp0rJk7fG7gHaFA?pid=Api&P=0&h=220" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Mango</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">100 Birr</p></div>
+                </div>
+                <!-- Hot Drinks -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=500" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Macchiato</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">35 Birr</p></div>
+                </div>
+                <!-- Cold Drinks -->
+                <div class="food-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="relative h-32 md:h-48 w-full"><img src="https://images.unsplash.com/photo-1622483767028-3f66f32aef97?q=80&w=500" class="w-full h-full object-cover"><div class="absolute bottom-0 left-0 w-full bg-black/50 p-2"><h3 class="text-white font-semibold text-sm">Soft Drinks</h3></div></div><div class="p-3"><p class="text-price font-bold text-lg">50 Birr</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- GAMES SECTION -->
+        <section id="chess-game" class="mb-12 border-t-2 border-purple-100 pt-8 mt-12">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 pl-1 border-l-4 border-purple-600">Play Chess</h2>
+            <div class="flex flex-col items-center">
+                <div id="status" class="game-status w-full max-w-[400px]">White's Turn</div>
+                <div id="chessboard" class="chess-board"></div>
+                <button onclick="resetGame()" class="mt-4 px-6 py-2 bg-purple-600 text-white rounded shadow hover:bg-purple-700">Restart Chess</button>
+                <p class="text-xs text-gray-500 mt-2 text-center max-w-xs">Strict Rules Enforced. Drag or Tap.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FIREBASE & APP LOGIC -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInAnonymously, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+        // 1. Initialize Firebase
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // 2. Authentication Logic (Handles tokens correctly)
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                initRealtimeSync(); // Only start sync after auth success
+            } catch (error) {
+                console.error("Auth failed:", error);
+            }
+        };
+        initAuth();
+
+        // 3. Realtime Sync Logic
+        // Correct path: artifacts/{appId}/public/data/menu/prices
+        // Collection: menu, Document: prices
+        function initRealtimeSync() {
+            // Updated Path: 6 segments total (artifacts/appId/public/data/menu/prices)
+            // This assumes 'menu' is a collection inside 'data' doc (simulated via odd/even path)
+            // Actually, Firestore structure must be Coll/Doc/Coll/Doc...
+            // artifacts (Coll) -> appId (Doc) -> public (Coll) -> data (Doc) -> menu (Coll) -> prices (Doc)
+            const pricesDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'menu', 'prices');
+
+            // LISTEN for updates from Cloud
+            onSnapshot(pricesDocRef, (docSnapshot) => {
+                if (docSnapshot.exists()) {
+                    const pricesData = docSnapshot.data();
+                    updateDOMPrices(pricesData);
+                    
+                    // Visual feedback
+                    const syncBadge = document.getElementById('sync-status');
+                    if(syncBadge) {
+                        syncBadge.style.display = 'block';
+                        syncBadge.innerText = 'Prices Synced!';
+                        setTimeout(() => syncBadge.style.display = 'none', 2000);
+                    }
+                }
+            }, (error) => {
+                console.error("Sync error:", error);
+            });
+
+            // Expose SAVE function to global window scope so HTML buttons can see it
+            window.savePriceChanges = async () => {
+                if(!window.adminItemReferences || window.adminItemReferences.length === 0) return;
+
+                const pricesObj = {};
+                window.adminItemReferences.forEach(item => {
+                    const newPrice = item.inputElement.value;
+                    item.domElement.innerText = newPrice; // Optimistic update
+                    pricesObj[item.title] = newPrice;
+                });
+
+                try {
+                    await setDoc(pricesDocRef, pricesObj, { merge: true });
+                    alert('Prices Updated & Synced to Cloud!');
+                } catch (e) {
+                    console.error("Save failed:", e);
+                    alert('Error saving to cloud. Ensure you are online.');
+                }
+            };
+        }
+
+        function updateDOMPrices(pricesObj) {
+            const foodCards = document.querySelectorAll('.food-card');
+            foodCards.forEach(card => {
+                const titleEl = card.querySelector('h3');
+                const priceEl = card.querySelector('.text-price');
+                if(titleEl && priceEl) {
+                    const title = titleEl.innerText;
+                    if(pricesObj[title]) {
+                        priceEl.innerText = pricesObj[title];
+                    }
+                }
+            });
+        }
+    </script>
+
+    <script>
+        // --- ADMIN UI LOGIC (Non-Firebase) ---
+        let secretClicks = 0;
+        window.adminItemReferences = [];
+
+        function triggerSecret() {
+            secretClicks++;
+            if(secretClicks === 5) {
+                document.getElementById('admin-modal').style.display = 'flex';
+                secretClicks = 0;
+            }
+            setTimeout(() => secretClicks = 0, 2000);
+        }
+
+        function checkAdmin() {
+            const pass = document.getElementById('admin-pass').value;
+            if(pass === '1209099') {
+                document.getElementById('admin-modal').style.display = 'none';
+                document.getElementById('admin-dashboard').style.display = 'block';
+                document.getElementById('save-btn-container').style.display = 'block';
+                document.getElementById('admin-pass').value = '';
+                loadAdminMenu();
+            } else {
+                alert('Wrong Password!');
+            }
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').style.display = 'none';
+            secretClicks = 0;
+        }
+
+        function logoutAdmin() {
+            document.getElementById('admin-dashboard').style.display = 'none';
+            document.getElementById('save-btn-container').style.display = 'none';
+        }
+
+        function loadAdminMenu() {
+            const container = document.getElementById('admin-items-container');
+            container.innerHTML = '';
+            window.adminItemReferences = [];
+
+            const foodCards = document.querySelectorAll('.food-card');
+            foodCards.forEach((card) => {
+                const titleEl = card.querySelector('h3');
+                const priceEl = card.querySelector('.text-price');
+                
+                if(titleEl && priceEl) {
+                    const title = titleEl.innerText;
+                    const price = priceEl.innerText;
+
+                    const row = document.createElement('div');
+                    row.className = 'admin-item-row';
+                    const label = document.createElement('label');
+                    label.innerText = title;
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = price;
+                    
+                    row.appendChild(label);
+                    row.appendChild(input);
+                    container.appendChild(row);
+
+                    window.adminItemReferences.push({
+                        domElement: priceEl,
+                        inputElement: input,
+                        title: title
+                    });
+                }
+            });
+        }
+
+        // --- UI & CHESS ---
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const body = document.body;
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+            body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : 'auto';
+        }
+
+        /* --- PROFESSIONAL CHESS ENGINE --- */
+        const boardElement = document.getElementById('chessboard');
+        const statusElement = document.getElementById('status');
+        const initialBoard = [['r','n','b','q','k','b','n','r'],['p','p','p','p','p','p','p','p'],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['','','','','','','',''],['P','P','P','P','P','P','P','P'],['R','N','B','Q','K','B','N','R']];
+        const pieces = {'r':'♜','n':'♞','b':'♝','q':'♛','k':'♚','p':'♟','R':'♜','N':'♞','B':'♝','Q':'♛','K':'♚','P':'♟'};
+        let board = [], turn = 'white', selectedPiece = null, legalMoves = [];
+
+        function resetGame() { board = JSON.parse(JSON.stringify(initialBoard)); turn = 'white'; selectedPiece = null; legalMoves = []; statusElement.innerText = "White's Turn"; statusElement.style.color = 'black'; renderBoard(); }
+        function renderBoard() {
+            boardElement.innerHTML = '';
+            for(let r=0; r<8; r++) {
+                for(let c=0; c<8; c++) {
+                    const square = document.createElement('div');
+                    square.className = `square ${(r+c)%2===0 ? 'white-square' : 'black-square'}`;
+                    if(selectedPiece && selectedPiece.r === r && selectedPiece.c === c) square.classList.add('selected');
+                    if(legalMoves.some(m => m.r === r && m.c === c)) square.classList.add('highlight');
+                    const pieceChar = board[r][c];
+                    if(pieceChar) {
+                        const pieceSpan = document.createElement('span');
+                        pieceSpan.className = `piece ${isWhite(pieceChar) ? 'white-piece' : 'black-piece'}`;
+                        pieceSpan.innerText = pieces[pieceChar];
+                        square.appendChild(pieceSpan);
+                    }
+                    square.onclick = () => handleSquareClick(r, c);
+                    boardElement.appendChild(square);
+                }
+            }
+        }
+        function handleSquareClick(r, c) {
+            const clickedPiece = board[r][c];
+            const isMyPiece = clickedPiece && (turn === 'white' ? isWhite(clickedPiece) : isBlack(clickedPiece));
+            if (selectedPiece && legalMoves.some(m => m.r === r && m.c === c)) { movePiece(selectedPiece.r, selectedPiece.c, r, c); return; }
+            if (isMyPiece) { selectedPiece = {r, c}; legalMoves = getValidMoves(r, c); renderBoard(); } 
+            else { selectedPiece = null; legalMoves = []; renderBoard(); }
+        }
+        function movePiece(fromR, fromC, toR, toC) {
+            board[toR][toC] = board[fromR][fromC]; board[fromR][fromC] = '';
+            turn = turn === 'white' ? 'black' : 'white';
+            if (isCheckMate(turn)) { statusElement.innerText = `Checkmate! ${turn==='white'?'Black':'White'} Wins!`; statusElement.style.color = 'red'; }
+            else if (isCheck(turn)) { statusElement.innerText = `${turn.charAt(0).toUpperCase() + turn.slice(1)}'s Turn (CHECK!)`; statusElement.style.color = 'red'; }
+            else { statusElement.innerText = `${turn.charAt(0).toUpperCase() + turn.slice(1)}'s Turn`; statusElement.style.color = 'black'; }
+            selectedPiece = null; legalMoves = []; renderBoard();
+        }
+        function isWhite(char) { return char >= 'A' && char <= 'Z'; }
+        function isBlack(char) { return char >= 'a' && char <= 'z'; }
+        function getValidMoves(r, c) {
+            const pseudoMoves = getPseudoLegalMoves(r, c, board);
+            const myColor = isWhite(board[r][c]) ? 'white' : 'black';
+            return pseudoMoves.filter(move => {
+                const tempBoard = JSON.parse(JSON.stringify(board));
+                tempBoard[move.r][move.c] = tempBoard[r][c]; tempBoard[r][c] = '';
+                return !isBoardInCheck(myColor, tempBoard);
+            });
+        }
+        function isCheck(color) { return isBoardInCheck(color, board); }
+        function isCheckMate(color) {
+            if (!isCheck(color)) return false;
+            for(let r=0; r<8; r++) for(let c=0; c<8; c++) {
+                const p = board[r][c];
+                if (p && ((color === 'white' && isWhite(p)) || (color === 'black' && isBlack(p)))) {
+                    if (getValidMoves(r, c).length > 0) return false;
+                }
+            }
+            return true;
+        }
+        function isBoardInCheck(color, currentBoard) {
+            let kingR, kingC;
+            const kingChar = color === 'white' ? 'K' : 'k';
+            for(let r=0; r<8; r++) for(let c=0; c<8; c++) if (currentBoard[r][c] === kingChar) { kingR = r; kingC = c; break; }
+            const enemyColor = color === 'white' ? 'black' : 'white';
+            for(let r=0; r<8; r++) for(let c=0; c<8; c++) {
+                const p = currentBoard[r][c];
+                if (p && ((enemyColor === 'white' && isWhite(p)) || (enemyColor === 'black' && isBlack(p)))) {
+                    if (getPseudoLegalMoves(r, c, currentBoard).some(m => m.r === kingR && m.c === kingC)) return true;
+                }
+            }
+            return false;
+        }
+        function getPseudoLegalMoves(r, c, currentBoard) {
+            const p = currentBoard[r][c], moves = [], type = p.toLowerCase(), myColor = isWhite(p) ? 'white' : 'black';
+            const directions = {'r':[[0,1],[0,-1],[1,0],[-1,0]], 'b':[[1,1],[1,-1],[-1,1],[-1,-1]], 'q':[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]], 'n':[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]], 'k':[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]]};
+            if (type === 'p') {
+                const dir = myColor === 'white' ? -1 : 1, startRow = myColor === 'white' ? 6 : 1;
+                if (currentBoard[r+dir] && currentBoard[r+dir][c] === '') { moves.push({r:r+dir, c:c}); if (r === startRow && currentBoard[r+dir*2][c] === '') moves.push({r:r+dir*2, c:c}); }
+                [[dir, 1], [dir, -1]].forEach(([dr, dc]) => { if (currentBoard[r+dr] && currentBoard[r+dr][c+dc]) { const t = currentBoard[r+dr][c+dc]; if (isWhite(t) !== (myColor==='white')) moves.push({r:r+dr, c:c+dc}); } });
+            } else if (type === 'n' || type === 'k') {
+                directions[type].forEach(([dr, dc]) => { let tr = r+dr, tc = c+dc; if(tr>=0&&tr<8&&tc>=0&&tc<8) { const t = currentBoard[tr][tc]; if(t==='' || (isWhite(t)!==(myColor==='white'))) moves.push({r:tr, c:tc}); } });
+            } else {
+                directions[type].forEach(([dr, dc]) => { let i = 1; while(true) { let tr=r+dr*i, tc=c+dc*i; if(tr<0||tr>7||tc<0||tc>7) break; const t=currentBoard[tr][tc]; if(t==='') { moves.push({r:tr, c:tc}); } else { if(isWhite(t)!==(myColor==='white')) moves.push({r:tr, c:tc}); break; } i++; } });
+            }
+            return moves;
+        }
+        resetGame();
+    </script>
+</body>
+</html>
